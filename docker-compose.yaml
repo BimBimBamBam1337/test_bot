@@ -1,0 +1,42 @@
+services:
+  app:
+    build: .
+    environment:
+      - BOT_TOKEN=${BOT_TOKEN}
+      - DATABASE_DSN=postgresql+asyncpg://${DB_USER}:${DB_PASS}@postgres:5432/${DB_NAME}
+      - REDIS_URL=redis://redis:${REDIS_PORT}
+    depends_on:
+      - postgres
+    volumes:
+      - .:/app
+    networks:
+      - network
+
+  postgres:
+    image: postgres:15
+    environment:
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PASS}
+      - POSTGRES_DB=${DB_NAME}
+    volumes:
+      - postgres:/var/lib/postgresql/data
+    networks:
+      - network
+
+  redis:
+    image: redis:alpine
+    networks:
+      - network
+    volumes:
+      - redis:/data
+  
+
+networks:
+  network:
+    driver: bridge
+
+volumes:
+  postgres:
+    driver: local
+  redis:
+    driver: local
