@@ -4,6 +4,6 @@ from .base import BaseRepository
 
 
 class UserRepository(BaseRepository[User]):
-    def __init__(self, session: AsyncSession):
-        super().__init__(User)
+    def __init__(self, session):
+        super().__init__(User, session)
         self.session = session

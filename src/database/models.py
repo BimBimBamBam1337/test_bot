@@ -98,9 +98,7 @@ class Order(Base):
     order_number: Mapped[str] = mapped_column(String(50), unique=True, nullable=False)
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"))
     total: Mapped[float] = mapped_column(Numeric(10, 2), nullable=False)
-    status: Mapped[OrderStatus] = mapped_column(
-        Enum(OrderStatus), default=OrderStatus.NEW
-    )
+    status: Mapped[OrderStatus] = mapped_column(String(50), default=OrderStatus.NEW)
     delivery_method: Mapped[str] = mapped_column(String(50), nullable=True)
 
     user: Mapped["User"] = relationship(back_populates="orders")

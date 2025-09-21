@@ -8,8 +8,12 @@ class UnitOfWork:
 
     async def __aenter__(self):
         self.session: AsyncSession = self.session_factory()
-        self.user_repo = UserRepository(self.session)
-        self. = 
+        self.categories_repo = CategoryRepository(self.session)
+        self.products_repo = ProductRepository(self.session)
+        self.users_repo = UserRepository(self.session)
+        self.carts_repo = CartRepository(self.session)
+        self.orders_repo = OrderRepository(self.session)
+        self.order_items_repo = OrderItemRepository(self.session)
 
         return self
 

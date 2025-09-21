@@ -3,5 +3,5 @@ from .base import BaseRepository
 
 
 class ProductRepository(BaseRepository[Product]):
-    def __init__(self):
-        super().__init__(Product)
+    def __init__(self, session):
+        super().__init__(Product, session)

@@ -5,6 +5,10 @@ from pydantic import PostgresDsn
 class Settings(BaseSettings):
     token: str
     postgres_dsn: PostgresDsn
+    db_user: str
+    db_pass: str
+    db_name: str
+    redis_port: str
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
 

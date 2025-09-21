@@ -1,45 +1,34 @@
-from dotenv import load_dotenv
-
-load_dotenv()
-
-import os
 import asyncio
 
 from loguru import logger
 
-fro
+from src.config import dp, bot
+from src.telegram.handlers import routers
+from src.telegram.midlewares import DependanciesMiddleware
 
 
 async def on_startup():
-    from telegram.handlers import routers
-    from telegram.middlewares import UserMiddleware
-
-    middleware = UserMiddleware()
-    dp.message.outer_middleware(middleware)
-    dp.callback_query.outer_middleware(middleware)
-
-    dp.include_routers(*routers)
-    scheduler.start()
-    bot_info = await bot.get_me()
-    logger.info(f"Bot @{bot_info.username} [{bot_info.id}] is started")
+    logger.success("🚀 Bot is started")
 
 
 async def on_shutdown():
-    logger.info("Bot stopped")
-    await bot.session.close()
+    logger.warning("⚠️ Bot is stopped")
 
 
 async def main():
-    try:
-        await on_startup()
-        await dp.start_polling(bot)
-    except Exception as e:
-        logger.critical(e)
-    finally:
-        await on_shutdown()
+    dm = DependanciesMiddleware()
+    dp.message.outer_middleware(dm)
+    dp.callback_query.outer_middleware(dm)
+    dp.my_chat_member.outer_middleware(dm)
+    dp.include_routers(*routers)
+    await bot.delete_webhook(drop_pending_updates=False)
+    dp.startup.register(on_startup)
+    dp.shutdown.register(on_shutdown)
+    logger.info(f"Bot started {await bot.get_me()}")
+    print("working")
+
+    await dp.start_polling(bot)
 
 
 if __name__ == "__main__":
-    import asyncio
-
     asyncio.run(main())
