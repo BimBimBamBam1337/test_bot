@@ -9,7 +9,7 @@ from src.database.uow import UnitOfWork
 from src.telegram.keyboards import inline
 from src.telegram.states import CheckoutStates
 from src.telegram.utils import generate_order_number
-from src.services import OrderService
+from src.services import OrderService, CartService, UserService
 
 router = Router()
 
@@ -92,3 +92,43 @@ async def confirm_order(callback: CallbackQuery, state: FSMContext, uow: UnitOfW
 async def cancel_order(callback: CallbackQuery, state: FSMContext):
     await callback.message.answer("❌ Заказ отменён.")
     await state.clear()
+
+
+@router.callback_query(F.data.startswith("checkout"))
+async def checkout(callback: CallbackQuery, uow: UnitOfWork, state: FSMContext):
+    user_service = UserService(uow)
+    cart_service = CartService(uow)
+    order_service = OrderService(uow)
+
+    user = await user_service.get_user_by_telegram(callback.from_user.id)
+
+    if not user or not user.address:
+        await callback.message.answer("🚫 У вас нет адреса. Пожалуйста, введите его.")
+        await state.set_state(CheckoutStates.address)
+        return
+
+    cart = await cart_service.get_cart(user.telegram_id)
+    if not cart or not cart.items:
+        await callback.message.answer("🛒 Ваша корзина пуста.")
+        return
+
+    order = await order_service.create_order(
+        order_number=generate_order_number(),
+        user_id=user.telegram_id,
+        contact_info={
+            "name": user.name,
+            "address": user.address,
+            "phone": user.phone,
+            "items": [
+                {
+                    "product_id": item.product_id,
+                    "quantity": item.quantity,
+                    "price": float(item.price_at_add),
+                }
+                for item in cart.items
+            ],
+            "status": "pending",
+        },
+    )
+
+    await callback.message.answer(f"✅ Заказ №{order.order_number} оформлен!")

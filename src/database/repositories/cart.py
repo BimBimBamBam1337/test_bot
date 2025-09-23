@@ -8,12 +8,13 @@ class CartRepository(BaseRepository[Cart]):
     def __init__(self, session):
         super().__init__(Cart, session)
 
-    async def get_by_user(self, user_id: int) -> Cart | None:
-        result = await self.session.execute(
+    async def get_by_user(self, user_id: int):
+        stmt = (
             select(Cart)
             .where(Cart.user_id == user_id)
-            .options(selectinload(Cart.items))
+            .options(selectinload(Cart.items).selectinload(CartItem.product))
         )
+        result = await self.session.execute(stmt)
         return result.scalars().first()
 
     async def add_or_update(

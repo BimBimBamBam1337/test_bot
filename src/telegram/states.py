@@ -27,3 +27,4 @@ class CheckoutStates(StatesGroup):
 
 class Cart(StatesGroup):
     confirm = State()
+    how_many = State()

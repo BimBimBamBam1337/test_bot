@@ -4,10 +4,13 @@ from aiogram.types import (
     Message,
 )
 from aiogram.filters import Command
+from aiogram.fsm.context import FSMContext
+
 from src.database.uow import UnitOfWork
 from src.services import CartService, ProductService
 from src.telegram.keyboards import inline
 from src.telegram.utils import build_inline_keyboard
+from src.telegram.states import Cart
 
 router = Router()
 
@@ -42,12 +45,34 @@ async def show_cart(message: Message, uow: UnitOfWork):
 
 
 @router.callback_query(F.data.startswith("add"))
-async def add_product(callback: CallbackQuery, uow: UnitOfWork):
-    await callback.message.answer(text=f'{callback.data.split(":")[1]}')
+async def add_product(callback: CallbackQuery, uow: UnitOfWork, state: FSMContext):
+    await state.update_data(product_id=int(callback.data.split(":")[1]))
+    await callback.message.answer(text=f"Введите кол-во, которое вы хотите заказать")
+    await state.set_state(Cart.how_many)
 
 
-@router.callback_query(F.data.startswith("update_qty"))
-async def update_quantity(callback: CallbackQuery, uow: UnitOfWork):
+@router.message(Cart.how_many)
+async def add_how_many(message: Message, uow: UnitOfWork, state: FSMContext):
+    cart_service = CartService(uow)
+    product_service = ProductService(uow)
+    try:
+        quantity = int(message.text)
+    except ValueError:
+        await message.answer("Введите целое кол-во")
+        return
+    data = await state.get_data()
+    product = await product_service.get_product(data["product_id"])
+    try:
+        await cart_service.add_product(
+            message.from_user.id, data["product_id"], quantity, product.price
+        )
+        await message.answer(f"Вы успешно добавили {product.name}")
+    except Exception:
+        return
+
+
+@router.callback_query(F.data.startswith("increase"))
+async def increase_quantity(callback: CallbackQuery, uow: UnitOfWork):
     product_id = int(callback.data.split(":")[1])
     service = CartService(uow)
 
@@ -60,6 +85,22 @@ async def update_quantity(callback: CallbackQuery, uow: UnitOfWork):
     await service.update_quantity(callback.from_user.id, product_id, item.quantity + 1)
     await callback.message.answer(
         f"✅ Количество {item.product.name} увеличено до {item.quantity + 1}"
+    )
+
+
+@router.callback_query(F.data.startswith("decrease"))
+async def decrease_quantity(callback: CallbackQuery, uow: UnitOfWork):
+    product_id = int(callback.data.split(":")[1])
+    service = CartService(uow)
+
+    cart = await service.get_cart(callback.from_user.id)
+    item = next((i for i in cart.items if i.product_id == product_id), None)
+    if not item:
+        await callback.message.answer("❌ Товар не найден в корзине")
+        return
+    await service.update_quantity(callback.from_user.id, product_id, item.quantity - 1)
+    await callback.message.answer(
+        f"✅ Количество {item.product.name} уменьшено на {item.quantity-1}"
     )
 
 

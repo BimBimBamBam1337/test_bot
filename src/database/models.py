@@ -98,7 +98,9 @@ class CartItem(Base):
 
 class Order(Base):
     order_number: Mapped[str] = mapped_column(String(50), unique=True, nullable=False)
-    user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"))
+    user_id: Mapped[int] = mapped_column(
+        ForeignKey("users.telegram_id", ondelete="CASCADE")
+    )
     total: Mapped[float] = mapped_column(Numeric(10, 2), nullable=False)
     status: Mapped[OrderStatus] = mapped_column(String(50), default=OrderStatus.NEW)
     delivery_method: Mapped[str] = mapped_column(String(50), nullable=True)

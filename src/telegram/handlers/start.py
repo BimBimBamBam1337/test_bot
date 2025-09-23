@@ -16,7 +16,13 @@ async def start(message: types.Message, uow: UnitOfWork, state: FSMContext):
             "telegram_id", message.from_user.id
         )  # type:ignore
         if user is None:
-            user = await uow.users_repo.create({"telegram_id": message.from_user.id, "name": message.from_user.username})  # type: ignore
+            user = await uow.users_repo.create(
+                {
+                    "telegram_id": message.from_user.id,
+                    "name": message.from_user.username,
+                    "phone": message.from_user.phone,
+                }
+            )
             await uow.carts_repo.create({"user_id": user.telegram_id})
             logger.info(f"Registered user {user.telegram_id} and created empty cart")
 
