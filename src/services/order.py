@@ -23,14 +23,16 @@ class OrderService:
             return await uow.orders_repo.get(order_id)
 
     # Создать заказ из корзины
-    async def create_order(self, user_id: int, contact_info: dict):
+    async def create_order(self, order_number: str, user_id: int, contact_info: dict):
         async with self.uow as uow:
             cart = await uow.carts_repo.get_by_user(user_id)
             if not cart:
                 return None  # корзина пустая
 
             # создаём заказ
-            order = await uow.orders_repo.create_from_cart(user_id, cart, contact_info)
+            order = await uow.orders_repo.create_from_cart(
+                order_number, user_id, cart.items, contact_info
+            )
             # очищаем корзину
             await uow.carts_repo.clear(user_id)
             return order

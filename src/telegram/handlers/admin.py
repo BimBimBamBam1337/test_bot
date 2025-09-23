@@ -70,22 +70,24 @@ async def add_product_stock(message: Message, state: FSMContext):
 
 @router.message(AddProductForm.category)
 async def add_product_category(message: Message, state: FSMContext, uow: UnitOfWork):
-    category = message.text.strip()
+    category_name = message.text.strip()
     # проверка на пустую строку
-    if not category:
+    if not category_name:
         await message.answer("Название категории не может быть пустым 🚫")
         return
     # проверка на тип (на всякий случай)
-    if not isinstance(category, str):
+    if not isinstance(category_name, str):
         await message.answer("Введите корректное название категории ✏️")
         return
     async with uow:
         # ищем категорию в базе
-        category = await uow.categories_repo.get_by_field("name", category)
+        category = await uow.categories_repo.get_by_field("name", category_name)
+        print(category)
         if category is None:
             # создаём новую категорию
-            category = await uow.categories_repo.create({"name": category})
+            category = await uow.categories_repo.create({"name": category_name})
             await message.answer("Вы создали новую котегорию")
+
             logger.success(f"Успешно создана категория {category.name}")
     # сохраняем category_id в state
     await state.update_data(category_id=category.id)

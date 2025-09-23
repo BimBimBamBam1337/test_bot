@@ -25,6 +25,19 @@ admin_panel_kb = InlineKeyboardMarkup(
         ],
     ]
 )
+delivery_panel_kb = InlineKeyboardMarkup(
+    inline_keyboard=[
+        [InlineKeyboardButton(text="🚚 Курьер", callback_data="delivery:courier")],
+        [InlineKeyboardButton(text="📦 Самовывоз", callback_data="delivery:pickup")],
+    ]
+)
+
+confirm_panel_kb = InlineKeyboardMarkup(
+    inline_keyboard=[
+        [InlineKeyboardButton(text="✅ Подтвердить", callback_data="confirm")],
+        [InlineKeyboardButton(text="❌ Отменить", callback_data="cancel")],
+    ]
+)
 
 
 def edit_product_panel_kb(product) -> InlineKeyboardMarkup:
@@ -87,3 +100,32 @@ def orders_panel_kb(orders) -> InlineKeyboardMarkup:
             for o in orders
         ]
     )
+
+
+def build_cart_kb(cart):
+    buttons = []
+    for item in cart.items:
+        buttons.append(
+            [
+                InlineKeyboardButton(
+                    text="➖", callback_data=f"decrease:{item.product_id}"
+                ),
+                InlineKeyboardButton(
+                    text=f"{item.product.name} ({item.quantity})", callback_data="noop"
+                ),
+                InlineKeyboardButton(
+                    text="➕", callback_data=f"increase:{item.product_id}"
+                ),
+            ]
+        )
+        buttons.append(
+            [
+                InlineKeyboardButton(
+                    text="❌ Удалить", callback_data=f"remove_item:{item.product_id}"
+                )
+            ]
+        )
+    buttons.append(
+        [InlineKeyboardButton(text="Оформить заказ", callback_data="checkout")]
+    )
+    return InlineKeyboardMarkup(inline_keyboard=buttons)

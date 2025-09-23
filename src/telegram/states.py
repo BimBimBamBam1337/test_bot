@@ -15,3 +15,15 @@ class ChangeProduct(StatesGroup):
     photo_url = State()
     stock = State()
     price = State()
+
+
+class CheckoutStates(StatesGroup):
+    name = State()
+    phone = State()
+    address = State()
+    delivery = State()
+    confirmation = State()
+
+
+class Cart(StatesGroup):
+    confirm = State()

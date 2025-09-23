@@ -29,7 +29,7 @@ class OrderStatus(str, enum.Enum):
 
 
 class Base(DeclarativeBase):
-    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     created_at: Mapped[datetime | None] = mapped_column(
         DateTime, default=datetime.now()
     )
@@ -74,7 +74,9 @@ class Product(Base):
 
 
 class Cart(Base):
-    user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"))
+    user_id: Mapped[int] = mapped_column(
+        ForeignKey("users.telegram_id", ondelete="CASCADE")
+    )
     user: Mapped["User"] = relationship(back_populates="carts")
 
     items: Mapped[list["CartItem"]] = relationship(

@@ -10,9 +10,10 @@ class OrderRepository(BaseRepository[Order]):
         super().__init__(Order, session)
 
     async def create_from_cart(
-        self, user_id: int, cart_items: list, contact_info: dict
+        self, order_number: str, user_id: int, cart_items: list, contact_info: dict
     ):
         order = Order(
+            order_number=order_number,
             user_id=user_id,
             status=OrderStatus.NEW,
             created_at=datetime.now(),

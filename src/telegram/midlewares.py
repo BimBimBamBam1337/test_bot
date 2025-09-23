@@ -16,7 +16,7 @@ class DependanciesMiddleware(BaseMiddleware):
         data: Dict[str, Any],
     ) -> Any:
         data["uow"] = UnitOfWork(SessionFactory)
-        try:
-            return await handler(event, data)
-        except Exception as e:
-            logger.error(f"An error ocured: {e}")
+        # try:
+        return await handler(event, data)
+        # except Exception as e:
+        #     logger.error(f"An error ocured: {e}")
