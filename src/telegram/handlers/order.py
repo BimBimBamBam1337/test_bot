@@ -14,7 +14,7 @@ from src.services import OrderService, CartService, UserService
 router = Router()
 
 
-@router.message(Command("checkout"))
+@router.message(Command("order"))
 async def start_checkout(message: Message, state: FSMContext, uow: UnitOfWork):
     user_service = UserService(uow)
     user = await user_service.get_user_by_telegram(message.from_user.id)
@@ -123,7 +123,7 @@ async def confirm_order(callback: CallbackQuery, state: FSMContext, uow: UnitOfW
         user_id=callback.from_user.id,
         delivery_method=data["delivery"],
     )
-
+    logger.success(f"Создал заказ с номер{data["order_number"]}")
     await callback.message.answer(f"Ваш заказ #{order.order_number} успешно оформлен!")
     await state.clear()
 
@@ -167,4 +167,5 @@ async def chosen_delivery(callback: CallbackQuery, uow: UnitOfWork, state: FSMCo
         user_id=user.telegram_id,
         delivery_method=callback.data.split(":")[1],
     )
+    logger.success(f"Создал заказ с номер{data["order_number"]}")
     await callback.message.answer(f"✅ Заказ №{order.order_number} оформлен!")

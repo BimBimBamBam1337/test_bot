@@ -68,6 +68,6 @@ async def process_address(message: types.Message, state: FSMContext, uow: UnitOf
             logger.info(f"Updated user {user.telegram_id} with full registration data")
 
     await message.answer(
-        text="Регистрация завершена! Теперь вы можете добавлять товары в корзину.",
+        text="Регистрация завершена! Теперь вы можете добавлять товары в корзину. Доступные команды: /cart,/checkout,/order,/catalog",
     )
     await state.clear()
