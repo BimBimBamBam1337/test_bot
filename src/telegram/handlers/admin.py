@@ -26,21 +26,21 @@ async def admin(message: Message, uow: UnitOfWork):
 
 @router.callback_query(F.data == "add_product")
 async def add_product(callback: CallbackQuery, state: FSMContext):
-    await callback.message.answer("Введите название товара ✏️")
+    await callback.message.answer("Введите название товара")
     await state.set_state(AddProductForm.name)
 
 
 @router.message(AddProductForm.name)
 async def add_product_name(message: Message, state: FSMContext):
     await state.update_data(name=message.text)
-    await message.answer("Введите описание товара 📄")
+    await message.answer("Введите описание товара")
     await state.set_state(AddProductForm.description)
 
 
 @router.message(AddProductForm.description)
 async def add_product_description(message: Message, state: FSMContext):
     await state.update_data(description=message.text)
-    await message.answer("Введите цену товара 💵")
+    await message.answer("Введите цену товара")
     await state.set_state(AddProductForm.price)
 
 
@@ -49,10 +49,10 @@ async def add_product_price(message: Message, state: FSMContext):
     try:
         price = float(message.text)
     except ValueError:
-        await message.answer("Введите число, а не текст 🚫")
+        await message.answer("Введите число, а не текст")
         return
     await state.update_data(price=price)
-    await message.answer("Введите количество на складе 📦")
+    await message.answer("Введите количество на складе")
     await state.set_state(AddProductForm.stock)
 
 
@@ -61,7 +61,7 @@ async def add_product_stock(message: Message, state: FSMContext):
     try:
         stock = int(message.text)
     except ValueError:
-        await message.answer("Введите целое число 🚫")
+        await message.answer("Введите целое число")
         return
     await state.update_data(stock=stock)
     await message.answer("Отправте котегорию")
@@ -73,11 +73,11 @@ async def add_product_category(message: Message, state: FSMContext, uow: UnitOfW
     category_name = message.text.strip()
     # проверка на пустую строку
     if not category_name:
-        await message.answer("Название категории не может быть пустым 🚫")
+        await message.answer("Название категории не может быть пустым")
         return
     # проверка на тип (на всякий случай)
     if not isinstance(category_name, str):
-        await message.answer("Введите корректное название категории ✏️")
+        await message.answer("Введите корректное название категории")
         return
     async with uow:
         # ищем категорию в базе
@@ -93,14 +93,14 @@ async def add_product_category(message: Message, state: FSMContext, uow: UnitOfW
     await state.update_data(category_id=category.id)
 
     # переходим к шагу фото
-    await message.answer("Отправьте фото товара 🖼️")
+    await message.answer("Отправьте фото товара")
     await state.set_state(AddProductForm.photo)
 
 
 @router.message(AddProductForm.photo)
 async def add_product_photo(message: Message, state: FSMContext, uow: UnitOfWork):
     if not message.photo:
-        await message.answer("Пришлите фото 📸")
+        await message.answer("Пришлите фото")
         return
 
     photo_url = message.photo[-1].file_id
@@ -119,7 +119,7 @@ async def add_product_photo(message: Message, state: FSMContext, uow: UnitOfWork
         )
 
     await state.clear()
-    await message.answer("✅ Товар добавлен!")
+    await message.answer("Товар добавлен!")
 
 
 @router.callback_query(F.data == "edit_products")
@@ -128,12 +128,12 @@ async def edit_products(callback: CallbackQuery, uow: UnitOfWork):
         products = await uow.products_repo.get_all()
 
     if not products:
-        await callback.message.answer("❌ Нет товаров для редактирования")
+        await callback.message.answer("Нет товаров для редактирования")
         return
 
-    kb = build_inline_keyboard(products, "edit_product")
-
-    await callback.message.answer("Выберите товар:", reply_markup=kb)
+    await callback.message.answer(
+        "Выберите товар:", reply_markup=build_inline_keyboard(products, "edit_product")
+    )
 
 
 @router.callback_query(F.data.startswith("edit_product"))
@@ -143,14 +143,14 @@ async def edit_product(callback: CallbackQuery, uow: UnitOfWork):
         product = await uow.products_repo.get(product_id)
 
     if not product:
-        await callback.message.answer("❌ Товар не найден")
+        await callback.message.answer("Товар не найден")
         return
 
     caption = (
-        f"📝 Редактируем {product.name}\n"
-        f"💰 Цена: {product.price}\n"
-        f"📦 Количество: {product.stock}\n"
-        f"📝 Описание: {product.description}"
+        f"Редактируем {product.name}\n"
+        f"Цена: {product.price}\n"
+        f"Количество: {product.stock}\n"
+        f"Описание: {product.description}"
     )
 
     await callback.message.answer_photo(
@@ -185,31 +185,32 @@ async def process_change(message: Message, state: FSMContext, uow: UnitOfWork):
         product = await uow.products_repo.get(product_id)
         new_value = message.text
         if not product:
-            await message.answer("❌ Товар не найден")
+            await message.answer("Товар не найден")
             await state.clear()
             return
         if field == "price":
             try:
                 new_value = float(new_value)
-                await message.answer(f"✅ Поле цена была обновлена: {new_value}")
+                await message.answer(f"Поле цена была обновлена: {new_value}")
                 logger.info(f"Цена была обновленна {product_id}: {new_value}")
             except ValueError:
-                await message.answer("❌ Цена должна быть числом")
+                await message.answer("Цена должна быть числом")
                 return
         if field == "stock":
             try:
                 new_value = int(new_value)
-                await message.answer(f"✅ Поле кол-во было обновлено: {new_value}")
+                await message.answer(f"Поле кол-во было обновлено: {new_value}")
                 logger.info(f"Кол-вол было обновленно {product_id}: {new_value}")
             except ValueError:
-                await message.answer("❌ Количество должно быть числом")
+                await message.answer("Количество должно быть числом")
                 return
         if field == "photo_url":
             if not message.photo:
-                await message.answer("❌ Нужно отправить картинку")
+                await message.answer("Нужно отправить картинку")
+                logger.info(f"Кол-вол было обновленно {product_id}: {message.photo}")
                 return
             new_value = message.photo[-1].file_id
-            await message.answer(f"✅ Поле фото было обновлено")
+            await message.answer(f"Поле фото было обновлено")
             logger.info(f"Фото было обновленно {product_id}: {new_value}")
         await uow.products_repo.update(product_id, {field: new_value})
 
@@ -222,13 +223,17 @@ async def view_orders(callback: CallbackQuery, uow: UnitOfWork):
     orders = await service.list_orders()
 
     if not orders:
-        await callback.message.answer("📭 Заказов пока нет")
+        await callback.message.answer("Заказов пока нет")
         return
 
     text = "\n\n".join(
-        f"📦 Заказ #{o.id}\n"
-        f"Пользователь: {o.user_id}\n"
+        f"Заказ #{o.id}\n"
+        f"Пользователь: {o.user.name}\n"
+        f"Адрес доставки: {o.user.address}\n"
+        f"Телефон: {o.user.phone if o.user.phone else 'Телефон не указан'}\n"
         f"Статус: {o.status}\n"
+        f"Способ доставки: {o.delivery_method}\n"
+        f"Цена заказа: {o.total}\n"
         f"Дата: {o.created_at.strftime('%d.%m.%Y %H:%M')}"
         for o in orders
     )
@@ -241,7 +246,7 @@ async def change_order_status(callback: CallbackQuery, uow: UnitOfWork):
         orders = await uow.orders_repo.get_all()
 
     if not orders:
-        await callback.message.answer("📭 Нет заказов для изменения статуса")
+        await callback.message.answer("Нет заказов для изменения статуса")
         return
 
     await callback.message.answer(
@@ -253,22 +258,23 @@ async def change_order_status(callback: CallbackQuery, uow: UnitOfWork):
 async def set_status(callback: CallbackQuery, uow: UnitOfWork):
     order_id = int(callback.data.split(":")[1])
     await callback.message.answer(
-        "Выберите новый статус:", reply_markup=inline.change_order_status_kb(order_id)
+        "Выберите новый статус:",
+        reply_markup=inline.change_order_status_panel_kb(order_id),
     )
 
 
 @router.callback_query(F.data.startswith("status:"))
 async def update_status(callback: CallbackQuery, uow: UnitOfWork):
-    _, order_id, status = callback.data.split(":")
+    order_id, status = callback.data.split(":")[1:]
     order_id = int(order_id)
 
     async with uow:
         order = await uow.orders_repo.get(order_id)
         if order:
-            order.status = message.text
+            await uow.orders_repo.update(order_id, {"status": status})
             await uow.session.commit()
             await callback.message.answer(
-                f"✅ Статус заказа #{order.id} изменён на {status}"
+                f"Статус заказа #{order.id} изменён на {status}"
             )
         else:
-            await callback.message.answer("❌ Заказ не найден")
+            await callback.message.answer("Заказ не найден")

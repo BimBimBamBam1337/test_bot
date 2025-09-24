@@ -44,7 +44,7 @@ class Base(DeclarativeBase):
 
 class User(Base):
     telegram_id: Mapped[int] = mapped_column(Integer, unique=True, nullable=False)
-    name: Mapped[str] = mapped_column(String(255))
+    name: Mapped[str] = mapped_column(String(255), nullable=True)
     phone: Mapped[str] = mapped_column(String(20), nullable=True)
     address: Mapped[str] = mapped_column(String(255), nullable=True)
     is_admin: Mapped[bool] = mapped_column(Boolean, default=False)

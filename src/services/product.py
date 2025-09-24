@@ -13,16 +13,22 @@ class ProductService:
         async with self.uow as uow:
             return await uow.products_repo.get(product_id)
 
+    async def list_products_by_category(self, category_id: int):
+        async with self.uow as uow:
+            return await uow.products_repo.get_all_by_field("category_id", category_id)
+
     async def add_product(
         self, name: str, description: str, price: float, stock: int, photo_url: str
     ):
         async with self.uow as uow:
-            return await uow.products_repo.add(
-                name=name,
-                description=description,
-                price=price,
-                stock=stock,
-                photo_url=photo_url,
+            return await uow.products_repo.create(
+                {
+                    "name": name,
+                    "description": description,
+                    "price": price,
+                    "stock": stock,
+                    "photo_url": photo_url,
+                }
             )
 
     async def update_product(self, product_id: int, data: dict):

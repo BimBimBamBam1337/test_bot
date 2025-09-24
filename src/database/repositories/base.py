@@ -31,6 +31,11 @@ class BaseRepository(Generic[ModelType]):
         result = await self.session.execute(select(self.model))
         return list(result.scalars().all())
 
+    async def get_all_by_field(self, field_name: str, value) -> list[ModelType]:
+        stmt = select(self.model).where(getattr(self.model, field_name) == value)
+        result = await self.session.execute(stmt)
+        return list(result.scalars().all())
+
     async def update(self, obj_id: int, obj_in: dict) -> ModelType | None:
         await self.session.execute(
             update(self.model).where(self.model.id == obj_id).values(**obj_in)

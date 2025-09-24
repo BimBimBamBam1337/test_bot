@@ -102,7 +102,7 @@ def orders_panel_kb(orders) -> InlineKeyboardMarkup:
     )
 
 
-def build_cart_kb(cart):
+def build_cart_panel_kb(cart):
     buttons = []
     for item in cart.items:
         buttons.append(
@@ -129,3 +129,24 @@ def build_cart_kb(cart):
         [InlineKeyboardButton(text="Оформить заказ", callback_data="checkout")]
     )
     return InlineKeyboardMarkup(inline_keyboard=buttons)
+
+
+def build_categories_panel_kb(categories: list) -> InlineKeyboardMarkup:
+    return InlineKeyboardMarkup(
+        inline_keyboard=[
+            [InlineKeyboardButton(text=cat.name, callback_data=f"category:{cat.id}")]
+            for cat in categories
+        ]
+    )
+
+
+def build_products_panel_kb(product) -> InlineKeyboardMarkup:
+    kb = [
+        [
+            InlineKeyboardButton(
+                text="Добавить в корзину", callback_data=f"add:{product.id}"
+            )
+        ],
+        [InlineKeyboardButton(text="Назад к категориям", callback_data="categorys")],
+    ]
+    return InlineKeyboardMarkup(inline_keyboard=kb)

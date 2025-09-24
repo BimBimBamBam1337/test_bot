@@ -2,6 +2,12 @@ from aiogram.fsm.state import StatesGroup, State
 from aiogram.fsm.context import FSMContext
 
 
+class Registration(StatesGroup):
+    name = State()
+    phone = State()
+    address = State()
+
+
 class AddProductForm(StatesGroup):
     name = State()
     description = State()
