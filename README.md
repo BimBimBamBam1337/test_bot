@@ -11,19 +11,14 @@ git clone <repo_url>
 cd <project_folder>
 ```
 2. Создаём .env файл и добавляем:
+```
 TOKEN=<токен бота>
-
-POSTGRES_DSN=postgresql+asyncpg://<пользвотель>:<пароль>@postgres:5432/<название
-бд>
-
-DB_USER=<пользвотель>
-
+POSTGRES_DSN=postgresql+asyncpg://<пользователь>:<пароль>@postgres:5432/<название_бд>
+DB_USER=<пользователь>
 DB_PASS=<пароль>
-
-DB_NAME=<название
-бд>
-
+DB_NAME=<название_бд>
 REDIS_PORT=<порт для редиса>
+```
 
 После установки нужно запустить команду make up, а послед поднятия всех сервисов
 написать make migrate
