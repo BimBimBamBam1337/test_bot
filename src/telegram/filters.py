@@ -7,5 +7,7 @@ class AdminFilter(BaseFilter):
 
     async def __call__(self, message: Message, uow: UnitOfWork) -> bool:
         async with uow:
-            user = uow.users_repo.get(message.from_user.id)
+            user = await uow.users_repo.get_by_field(
+                "telegram_id", message.from_user.id
+            )
             return user.is_admin
