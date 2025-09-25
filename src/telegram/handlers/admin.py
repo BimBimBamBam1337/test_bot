@@ -11,11 +11,12 @@ from src.telegram.keyboards import inline
 from src.telegram.states import AddProductForm, ChangeProduct
 from src.telegram.utils import build_inline_keyboard
 from src.services import ProductService, OrderService
+from src.telegram.filters import AdminFilter
 
 router = Router()
 
 
-@router.message(Command("admin"))
+@router.message(Command("admin"), AdminFilter())
 async def admin(message: Message, uow: UnitOfWork):
     await message.answer(
         text=admin_text,
